@@ -1,19 +1,19 @@
 '''Esta clase permite generar el modelo para los tipos de user'''
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from config.db import Base
 
+class Usuario(Base):
+    __tablename__ = "c_usuario"
 
-class User(Base):
-     '''Clase para especificar tabla usuarios'''
-     _tablemname_= "tbb_usuarios"
-      Id = Column(Integer, primary_Key= True, index=True)
-      Rol_Id= Column(Integer, ForeignKey("tbc_roles.Id"))
-      Nombre= Column(String(60))
-      primerApellido= Column(String(60))
-      Correo_Electronico=Column(String(100))
-      
+    us_id = Column(Integer, primary_key=True, index=True)
+    us_nombre = Column(String(60))
+    us_apellidoPaterno = Column(String(60))
+    us_apellidoMaterno = Column(String(60))
+    us_usuario = Column(String(60), unique=True)
+    us_password = Column(String(256))
 
+    ro_id = Column(Integer, ForeignKey("c_rol.ro_id"))
 
-
-
+    rol = relationship("Rol", back_populates="usuarios")
+    servicios = relationship("Servicio", back_populates="usuario")
