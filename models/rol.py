@@ -8,8 +8,12 @@ class Rol(Base):
     ''' Creacion de la tabla de roles en Mysql'''
     __tablename__ = "c_rol"
 
-    ro_id = Column(Integer, primary_key=True, index=True)
-    ro_nombre = Column(String(45), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(45), nullable=False)
 
-    usuarios = relationship("Usuario", back_populates="rol")
+    estado = Column(Boolean)
+    # usuarios = relationship("Usuario", back_populates="rol")
 
+    fecha_registro = Column(DateTime)
+    fecha_actualizacion = Column(DateTime)
+    
