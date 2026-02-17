@@ -2,14 +2,11 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-
-
-
 class ServicioBase(BaseModel):
     nombre: str
     descripcion: str
     costo: float
-    duracion: int
+    duracion_minutos: int
     estado: bool
 
 class ServicioCreate(ServicioBase):
@@ -19,7 +16,7 @@ class ServicioUpdate(BaseModel):
     nombre: Optional[str]
     descripcion: Optional[str]
     costo: Optional[float]
-    duracion: Optional[int]
+    duracion_minutos: Optional[int]
     estado: Optional[bool]
 
 class ServicioResponse(ServicioBase):

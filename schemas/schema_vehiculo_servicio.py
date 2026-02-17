@@ -1,13 +1,13 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date, time
 from typing import Optional
-
 from enum import Enum
 
 class EstatusSchema(str, Enum):
     Programado = "Programado"
-    Proceso = "En proceso"
+    Proceso = "Proceso"
     Realizado = "Realizado"
+    Cancelada = "Cancelada"
 
 class VehiculoServicioBase(BaseModel):
     auto_Id: int
@@ -29,4 +29,3 @@ class VehiculoServicioResponse(VehiculoServicioBase):
 
     class Config:
         orm_mode = True
-
