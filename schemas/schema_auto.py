@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class AutoBase(BaseModel):
     usuario_Id: int
     marca: str
@@ -12,13 +13,16 @@ class AutoBase(BaseModel):
     anio: int
     estatus: bool
 
+
 class AutoCreate(AutoBase):
     pass
+
 
 class AutoResponse(AutoBase):
     Id: int
     fecha_registro: datetime
     fecha_actualizacion: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+
 class UsuarioBase(BaseModel):
     rol_Id: int
     nombre: str
@@ -12,19 +13,25 @@ class UsuarioBase(BaseModel):
     numero_telefono: str
     estado: bool
 
+
 class UsuarioCreate(UsuarioBase):
     password: str
 
+
 class UsuarioUpdate(BaseModel):
-    nombre: Optional[str]
-    direccion: Optional[str]
-    numero_telefono: Optional[str]
-    estado: Optional[bool]
+    nombre: Optional[str] = None
+    direccion: Optional[str] = None
+    numero_telefono: Optional[str] = None
+    estado: Optional[bool] = None
 
-class UsuarioResponse(UsuarioBase):
+
+class UsuarioResponse(BaseModel):
     Id: int
-    fecha_registro: datetime
-    fecha_actualizacion: datetime
+    nombre: str
+    correo_electronico: str
+    fecha_registro: datetime | None = None
+    fecha_actualizacion: datetime | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

@@ -1,45 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.db import get_db
-from models.model_vehiculo_servicio_usuario import VehiculoServicioUsuario
 from schemas.schema_vehiculo_servicio import (
     VehiculoServicioCreate,
     VehiculoServicioResponse
 )
-from datetime import datetime
 from typing import List
+from crud import crud_vehiculos_servicios_usuarios
 
-router = APIRouter(prefix="/vehiculo-servicios", tags=["Vehiculo Servicios"])
+from config.security import get_current_user
 
+router = APIRouter(
+    prefix="/vehiculo-servicios",
+    tags=["Vehiculo Servicios"],
+    dependencies=[Depends(get_current_user)]  # 🔒
+)
 @router.post("/", response_model=VehiculoServicioResponse)
 def crear_asignacion(data: VehiculoServicioCreate, db: Session = Depends(get_db)):
-    nueva = vehiculoServicio(
-        **data.dict(),
-        fecha_registro=datetime.now(),
-        fecha_actualizacion=datetime.now()
-    )
-    db.add(nueva)
-    db.commit()
-    db.refresh(nueva)
-    return nueva
+    return crud_vehiculos_servicios_usuarios.crear_asignacion(db, data)
+
 
 @router.get("/", response_model=List[VehiculoServicioResponse])
 def obtener_asignaciones(db: Session = Depends(get_db)):
-    return db.query(vehiculoServicio).all()
+    return crud_vehiculos_servicios_usuarios.get_asignaciones(db)
+
 
 @router.get("/{id}", response_model=VehiculoServicioResponse)
 def obtener_asignacion(id: int, db: Session = Depends(get_db)):
-    asignacion = db.query(vehiculoServicio).filter(vehiculoServicio.Id == id).first()
+    asignacion = crud_vehiculos_servicios_usuarios.get_asignacion(db, id)
     if not asignacion:
         raise HTTPException(status_code=404, detail="Asignación no encontrada")
     return asignacion
 
+
 @router.delete("/{id}")
 def eliminar_asignacion(id: int, db: Session = Depends(get_db)):
-    asignacion = db.query(vehiculoServicio).filter(vehiculoServicio.Id == id).first()
+    asignacion = crud_vehiculos_servicios_usuarios.delete_asignacion(db, id)
     if not asignacion:
         raise HTTPException(status_code=404, detail="Asignación no encontrada")
-
-    db.delete(asignacion)
-    db.commit()
     return {"mensaje": "Asignación eliminada correctamente"}

@@ -1,66 +1,71 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from config.db import get_db
 from models.user import Usuario
+from config.db import get_db
 from schemas.schema_usuario import (
     UsuarioCreate,
     UsuarioUpdate,
     UsuarioResponse
 )
-
-from datetime import datetime
+from fastapi.security import OAuth2PasswordRequestForm
+from config.security import verify_password, create_access_token, get_current_user
 from typing import List
+from crud import crud_usuarios
 
-router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
+router = APIRouter(
+    prefix="/usuarios",
+    tags=["Usuarios"]
+)
 
-# Crear usuario
+# 🔓 Crear usuario libre
 @router.post("/", response_model=UsuarioResponse)
 def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
-    nuevo_usuario = Usuario(
-        **usuario.dict(),
-        fecha_registro=datetime.now(),
-        fecha_actualizacion=datetime.now()
+    return crud_usuarios.create_usuario(db, usuario)
+
+
+# 🔐 Login libre
+@router.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    usuario = crud_usuarios.get_usuario_by_email(db, form_data.username)
+
+    if not usuario or not verify_password(form_data.password, usuario.password):
+        raise HTTPException(status_code=400, detail="Credenciales incorrectas")
+
+    access_token = create_access_token(
+        data={"sub": str(usuario.Id)}
     )
-    db.add(nuevo_usuario)
-    db.commit()
-    db.refresh(nuevo_usuario)
-    return nuevo_usuario
 
-# Obtener todos
-@router.get("/", response_model=List[UsuarioResponse])
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
+# 🔒 Todo lo demás protegido
+@router.get("/", response_model=List[UsuarioResponse], dependencies=[Depends(get_current_user)])
 def obtener_usuarios(db: Session = Depends(get_db)):
-    return db.query(Usuario).all()
+    return crud_usuarios.get_usuarios(db)
 
-# Obtener por ID
-@router.get("/{usuario_id}", response_model=UsuarioResponse)
+
+@router.get("/{usuario_id}", response_model=UsuarioResponse, dependencies=[Depends(get_current_user)])
 def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.Id == usuario_id).first()
+    usuario = crud_usuarios.get_usuario(db, usuario_id)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return usuario
 
-# Actualizar
-@router.put("/{usuario_id}", response_model=UsuarioResponse)
+
+@router.put("/{usuario_id}", response_model=UsuarioResponse, dependencies=[Depends(get_current_user)])
 def actualizar_usuario(usuario_id: int, datos: UsuarioUpdate, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.Id == usuario_id).first()
+    usuario = crud_usuarios.update_usuario(db, usuario_id, datos)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    for key, value in datos.dict(exclude_unset=True).items():
-        setattr(usuario, key, value)
-
-    usuario.fecha_actualizacion = datetime.now()
-    db.commit()
-    db.refresh(usuario)
     return usuario
 
-# Eliminar
-@router.delete("/{usuario_id}")
+
+@router.delete("/{usuario_id}", dependencies=[Depends(get_current_user)])
 def eliminar_usuario(usuario_id: int, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.Id == usuario_id).first()
+    usuario = crud_usuarios.delete_usuario(db, usuario_id)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    db.delete(usuario)
-    db.commit()
     return {"mensaje": "Usuario eliminado correctamente"}

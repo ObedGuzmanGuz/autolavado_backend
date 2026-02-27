@@ -2,14 +2,14 @@
 from sqlalchemy import Column, Integer, Boolean, DateTime, Date, Time, ForeignKey, Enum
 from enum import Enum as PyEnum
 from config.db import Base
-
+from sqlalchemy.sql import func
 class Estatus(PyEnum):
     Programado = "Programado"
     Proceso = "Proceso"
     Realizado = "Realizado"
     Cancelada = "Cancelada"
 
-class VehiculoServicioUsuario(Base):
+class VehiculoServicio(Base):
     __tablename__ = "vehiculos_servicios_usuarios"
 
     Id = Column(Integer, primary_key=True, index=True)
@@ -23,9 +23,8 @@ class VehiculoServicioUsuario(Base):
     estatus = Column(Enum(Estatus), default=Estatus.Programado)
     estado = Column(Boolean)
 
-    fecha_registro = Column(DateTime)
-    fecha_actualizacion = Column(DateTime)
-
+    fecha_registro = Column(DateTime, default=func.now())
+    fecha_actualizacion = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
 

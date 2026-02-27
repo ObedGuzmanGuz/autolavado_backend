@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String,Boolean,Float,DateTime
 # from sqlalchemy.orm import relationship
 from sqlalchemy import DECIMAL
-
+from sqlalchemy.sql import func
 from config.db import Base
 
 class Servicio(Base):
@@ -13,8 +13,8 @@ class Servicio(Base):
     costo = Column(DECIMAL(18,2))
     duracion_minutos= Column(Integer)
     estado = Column(Boolean)
-    fecha_registro= Column(DateTime)
-    fecha_actualizacion= Column(DateTime)
+    fecha_registro = Column(DateTime, default=func.now())
+    fecha_actualizacion = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
 

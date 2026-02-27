@@ -12,8 +12,9 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AutoLavado API")
 
+app.include_router(usuario_routes.router)  # Login libre
+
 app.include_router(auto_routes.router)
 app.include_router(rol_routes.router)
 app.include_router(servicio_routes.router)
-app.include_router(usuario_routes.router)
 app.include_router(vehiculo_servicio_routes.router)
